@@ -139,6 +139,7 @@ movies$rating <- relevel(movies$rating, " R")
 str(movies)
 
 # fit the model 
+# Model: log(P(Win)/P(not Win)) = beta0 + beta1 tomatometer + beta2 (PG -13) + beta3 (PG)  
 # logistic model because the response for win is either a 1 or 0
 movies.out <- glm(won ~ tomatometer + rating, data = movies, family = "binomial")
 summary(movies.out)
@@ -150,12 +151,20 @@ exp(coef(movies.out)[-1])
 # For each additional positive review, we estimate the mean chance of winning an academy award to increase by 
 # 5%, holding all else constant. 
 
+# Holding all else constant, PG-13 movies have a 21% decrease in odds of winning the 
+# Academy Award over R rated movies (95% CI: 0.25 to 2.28). 
+
+
 # 95%: CI
 exp(confint(movies.out)[-1,])
 
 # Test Ho: MPAA Rating has no effect on winning the Academy Award at α = 0.05
 movies.red <- glm(won~ tomatometer, data = movies, family = 'binomial')
 anova(movies.red, movies.out, test = "Chisq")
+
+# Conclusion: With a p-value of 0.9 we can conclude that MPAA ratings have no effect on 
+# winning an Academy Award.  
+
 
 predict(movies.out, newdata = data.frame(name = "Black Panther", tomatometer = 97, rating = " PG-13"), 
         type = "response")
@@ -182,4 +191,10 @@ plot(test.perf, add = TRUE, col = "green")
 # AUC
 performance(movies.pred, measure = "auc")
 performance(test.pred, measure = "auc")
+
+# tells how good your model is at predicting 
+
+# The AUC for our test prediction is .634.  An AUC of 0.5 means that model tell doesn’t tell us 
+# anything.  Since this is greater than 0.5, we know that it’s a better chance than flipping a coin, 
+# yet it is definitely not 100% accurate.
 
